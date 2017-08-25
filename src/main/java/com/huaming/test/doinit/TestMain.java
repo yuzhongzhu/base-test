@@ -1,5 +1,7 @@
 package com.huaming.test.doinit;
 
+import java.lang.reflect.Proxy;
+
 public class TestMain {
 	/*static{
 		System.out.println("TestMain---1");
