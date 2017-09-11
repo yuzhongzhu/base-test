@@ -22,7 +22,7 @@ package com.huaming.test.spring.beans;
  * @author Administrator
  * @since 4.3
  */
-public class UserNew {
+public class User {
 	private String userName;
 	private String email;
 	

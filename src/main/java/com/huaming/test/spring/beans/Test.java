@@ -28,8 +28,8 @@ import org.springframework.core.io.ClassPathResource;
  */
 public class Test {
 	public static void main(String[] args) {
-		DefaultListableBeanFactory beanFactory = new XmlBeanFactory(new ClassPathResource("com/huaming/test/spring/beans/selfdefinition.xml"));
-		UserNew user = (UserNew) beanFactory.getBean("testBean");
+		DefaultListableBeanFactory beanFactory = new XmlBeanFactory(new ClassPathResource("selfdefinition.xml"));
+		User user = (User) beanFactory.getBean("testBean");
 		System.out.println(user.getUserName()+" "+user.getEmail());
 		
 	}

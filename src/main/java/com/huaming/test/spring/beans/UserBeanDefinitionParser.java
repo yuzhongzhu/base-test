@@ -32,7 +32,7 @@ public class UserBeanDefinitionParser extends AbstractSingleBeanDefinitionParser
 	@Override
 	protected Class<?> getBeanClass(Element element) {
 		// TODO Auto-generated method stub
-		return UserNew.class;
+		return User.class;
 	}
 
 	@Override
