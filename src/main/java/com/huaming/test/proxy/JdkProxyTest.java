@@ -1,6 +1,7 @@
 package com.huaming.test.proxy;
 
 import java.lang.reflect.Proxy;
+import java.util.Arrays;
 
 public class JdkProxyTest {
 	public static void main(String[] args) {
