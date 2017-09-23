@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuration
+	PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+		"http://mybatis.org/dtd/mybatis-3-config.dtd">   <!-- dtd约束，一定要拷过去啊。下面的根据具体应用，改改就可以了 -->
+<configuration>
+	
+
+	 <settings>
+        <setting name="jdbcTypeForNull" value="NULL"/>
+    </settings>
+    <!-- <plugins>
+        <plugin interceptor="com.tianjs.framework.dao.mybatis.paginator.OffsetLimitInterceptor">
+            <property name="dialectClass" value="com.tianjs.framework.dao.mybatis.paginator.dialect.MySQLDialect"/>
+        </plugin>
+    </plugins> -->
+    
+</configuration>
