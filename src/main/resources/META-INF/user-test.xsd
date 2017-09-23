@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <schema xmlns="http://www.w3.org/2001/XMLSchema"
 targetNamespace="http://www.huaming.com/schema/user"
-xmlns:tns="http://www.huaming.com/schema/user"
+xmlns:user="http://www.huaming.com/schema/user"
 elementFormDefault="qualified">
 	<element name="user">
-		<complexType>
+        <complexType>
 			<attribute name="id" type="string" />
 			<attribute name="userName" type="string" />
 			<attribute name="email" type="string" />
 		</complexType>
-	</element>
+    </element>
 </schema>
