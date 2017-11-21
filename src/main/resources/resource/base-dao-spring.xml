@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:jee="http://www.springframework.org/schema/jee"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="
+	http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+	http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd
+	http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd
+	http://www.springframework.org/schema/jee http://www.springframework.org/schema/jee/spring-jee.xsd
+	http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+
+<!-- 配置数据源 -->
+	<bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource" destroy-method="close">
+   		<property name="driverClass" value="${data.driver}" />
+   		<property name="jdbcUrl" value="${data.url}" />
+   		<property name="user" value="${data.username}" />
+   		<property name="password" value="${data.password}" />
+    	<property name="minPoolSize" value="10" />
+    	<property name="maxPoolSize" value="300" />
+    	<property name="maxIdleTime" value="1800" />
+    	<property name="acquireIncrement" value="3" />
+    	<property name="maxStatements" value="1000" />
+    	<property name="initialPoolSize" value="10" />
+    	<property name="idleConnectionTestPeriod" value="300" />
+    	<property name="acquireRetryAttempts" value="30" />
+    	<property name="acquireRetryDelay" value="100" />
+    	<property name="breakAfterAcquireFailure" value="false" />
+    	<property name="testConnectionOnCheckout" value="false" />
+    	<property name="preferredTestQuery" value="select 1 from dual"/>
+	</bean>
+	
+	
+	<bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="dataSource" ref="dataSource"/>
+		<property name="configLocation" value="classpath:context/mybatis/mybatis-config.xml"/>
+		<!-- mapper和resultmap配置路径 --> 
+		<property name="mapperLocations">
+			<list>
+				<value>classpath:context/mybatis/mapper/*SqlMapper.xml</value>
+				<value>classpath:context/mybatis/mapper/*sqlMapper.xml</value>
+			    <value>classpath:config/mybatis/base/*SqlMapper.xml</value>
+			    <value>classpath:config/mybatis/base/*sqlMapper.xml</value>
+			    <value>classpath:config/mybatis/trans/*SqlMapper.xml</value>
+				<value>classpath:config/mybatis/trans/*sqlMapper.xml</value>
+				<value>classpath:config/mybatis/common/*SqlMapper.xml</value>
+				<value>classpath:config/mybatis/common/*sqlMapper.xml</value>
+				<value>classpath:mapper/*.xml</value>
+			</list>
+		</property>
+	</bean>
+
+
+
+	<bean id="sqlSessionTemplate" class="org.mybatis.spring.SqlSessionTemplate">
+	 	   <constructor-arg name="sqlSessionFactory" ref="sqlSessionFactory" />
+	</bean>
+
+	
+	<bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+		<property name="basePackage" value="com.tianjs"/>
+		<property name="sqlSessionFactoryBeanName" value="sqlSessionFactory" />
+		<property name="markerInterface"  value="com.tianjs.framework.dao.mybatis.SqlMap"/>
+	</bean>
+	
+	<bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+    	<property name="dataSource" ref="dataSource" />
+    	<property name="globalRollbackOnParticipationFailure" value="false" />
+	</bean>
+	
+	
+
+<!-- 声明事务 -->
+	<tx:advice id="txAdvice" transaction-manager="transactionManager">
+		<tx:attributes>
+			<tx:method name="add*"  propagation="REQUIRED"    rollback-for="java.lang.Exception"/>
+			<tx:method name="save*" propagation="REQUIRED"    rollback-for="java.lang.Exception"/>
+			<tx:method name="edit*" propagation="REQUIRED"    rollback-for="java.lang.Exception"/>
+			<tx:method name="remove*" propagation="REQUIRED"  rollback-for="java.lang.Exception"/>
+			<tx:method name="insert*" propagation="REQUIRED"  rollback-for="java.lang.Exception"/>
+			<tx:method name="update*" propagation="REQUIRED"  rollback-for="java.lang.Exception"/>
+			<tx:method name="modify*" propagation="REQUIRED"  rollback-for="java.lang.Exception"/>
+			<tx:method name="del*" propagation="REQUIRED"     rollback-for="java.lang.Exception"/>
+			<!-- 查询采用只读事务 -->
+			<tx:method name="query*" read-only="true" propagation="SUPPORTS"/>
+			<tx:method name="find*"  read-only="true" propagation="SUPPORTS"/>
+			<tx:method name="get*"   read-only="true" propagation="SUPPORTS"/>
+			<!-- 需要新事务-->
+			<tx:method name="txNew*" read-only="false" propagation="REQUIRES_NEW"/>
+			<tx:method name="set*" read-only="true" propagation="NOT_SUPPORTED"/>
+			<tx:method name="*" read-only="true" propagation="NOT_SUPPORTED"/>
+		</tx:attributes>
+	</tx:advice>
+	
+	
+
+	<!-- 面向service定义切入点 -->
+	<aop:config>
+	   <aop:pointcut expression="execution(* com.tianjs..service..*Impl.*(..))"
+	    		id="allseriviceMethod" />
+	   <aop:advisor advice-ref="txAdvice" pointcut-ref="allseriviceMethod" />
+	</aop:config>
+	<bean class="com.tianjs.framework.common.util.IdGen" id="idGenor">
+		<constructor-arg value="1" name="workerId"/>
+		<constructor-arg value="0" name="datacenterId"/>
+	</bean>
+	<!-- 获取主键工具类 -->
+	<bean class="com.tianjs.framework.bas.sequence.ConsistencyGenerator" init-method="init">
+		<property name="gen" ref="idGenor"/>
+		<property name="dateService"  ref="systemDateService"/> 
+	</bean>
+	
+	
+	<!-- 使用annotation注解方式配置事务 -->
+	<tx:annotation-driven transaction-manager="transactionManager"/>
+	
+	
+	
+	<!-- 配置数据源 -->
+	<bean id="tccDataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource" destroy-method="close">
+   		<property name="driverClass" value="${data.driver}" />
+   		<property name="jdbcUrl" value="${data.url}" />
+   		<property name="user" value="${data.username}" />
+   		<property name="password" value="${data.password}" />
+    	<property name="minPoolSize" value="5" />
+    	<property name="maxPoolSize" value="30" />
+    	<property name="maxIdleTime" value="1800" />
+    	<property name="acquireIncrement" value="3" />
+    	<property name="maxStatements" value="500" />
+    	<property name="initialPoolSize" value="5" />
+    	<property name="idleConnectionTestPeriod" value="300" />
+    	<property name="acquireRetryAttempts" value="30" />
+    	<property name="acquireRetryDelay" value="100" />
+    	<property name="breakAfterAcquireFailure" value="false" />
+    	<property name="testConnectionOnCheckout" value="false" />
+    	<property name="preferredTestQuery" value="select 1 from dual"/>
+	</bean>
+    <bean id="sqlSessionFactoryTcc" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="dataSource" ref="tccDataSource"/>
+		<property name="configLocation" value="classpath:context/mybatis/mybatis-config2.xml"/>
+		
+		<!-- mapper和resultmap配置路径 --> 
+		 <property name="mapperLocations">
+			<list>
+				<value>classpath:context/consistency/mybatis/mapper/RecordSqlMapper.xml</value>
+			</list>
+		</property>
+	</bean>
+	<bean id="sqlSessionTemplateTcc" class="org.mybatis.spring.SqlSessionTemplate">
+	 	   <constructor-arg name="sqlSessionFactory" ref="sqlSessionFactoryTcc" />
+	</bean> 
+
+	
+	<bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+		<property name="basePackage" value="com.tianjs"/>
+		<property name="sqlSessionFactoryBeanName" value="sqlSessionFactoryTcc" />
+		<property name="markerInterface"  value="com.tianjs.framework.dao.mybatis.SqlMap"/>
+	</bean>
+	
+	<bean id="conTransactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+    	<property name="dataSource" ref="tccDataSource" />
+    	<property name="globalRollbackOnParticipationFailure" value="false" />
+	</bean> 
+	<tx:annotation-driven transaction-manager="conTransactionManager"/>
+</beans>
